@@ -1,0 +1,21 @@
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
+
+model_id = "Qwen/Qwen1.5-0.5B"
+
+# Load tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.float16,
+    device_map="auto",            # Automatically uses available Apple GPU (Metal)
+    trust_remote_code=True
+)
+
+# Prompt
+prompt = "Explain artificial intelligence in simple words."
+inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+
+# Generate response
+outputs = model.generate(**inputs, max_new_tokens=100)
+print(tokenizer.decode(outputs[0], skip_special_tokens=True))
